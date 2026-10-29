@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Hardening Dashboard</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#e3e8f0;--blue:#2457d6;--navy:#14213d;--red:#b42318;--orange:#b54708;--green:#067647}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(120deg,#14213d,#2457d6);color:#fff;padding:30px 22px}
+.wrap{max-width:1180px;margin:auto}header h1{margin:0 0 6px;font-size:clamp(25px,4vw,36px)}header p{margin:0;color:#e0e8ff;max-width:760px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}nav button{border:1px solid #ffffff55;background:#ffffff12;color:#fff;padding:9px 13px;border-radius:9px;cursor:pointer}nav button.active,nav button:hover{background:#fff;color:var(--navy)}
+main{max-width:1180px;margin:24px auto;padding:0 18px 40px}.panel{display:none}.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.card,.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 3px 12px #17203308}
+.stat{font-size:29px;font-weight:750;margin:4px 0}.muted{color:var(--muted)}h2{margin:0 0 15px;font-size:23px}h3{margin:0 0 8px;font-size:17px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:24px 0 12px}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#f0f4fa;font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:#475467}tr:last-child td{border-bottom:0}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}.critical{background:#fee4e2;color:var(--red)}.high{background:#ffead5;color:var(--orange)}.medium{background:#fef0c7;color:#93370d}.low{background:#dcfae6;color:var(--green)}
+button,.btn{font:inherit}.primary{background:var(--blue);color:white;border:0;border-radius:9px;padding:10px 14px;cursor:pointer}.secondary{background:white;border:1px solid var(--line);border-radius:9px;padding:9px 12px;cursor:pointer}.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.filters input,.filters select,input[type=text],textarea,select{padding:10px 11px;border:1px solid #cfd7e5;border-radius:8px;background:white;color:var(--ink);font:inherit}.filters input{flex:1;min-width:180px}
+.flow{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:10px;align-items:stretch}.flow div{border:1px solid #ccd8ee;background:#f8faff;padding:15px;border-radius:11px;text-align:center}.arrow{color:var(--blue);font-size:22px}
+.item{display:flex;gap:11px;padding:13px 0;border-bottom:1px solid var(--line)}.item:last-child{border:0}.item input{width:18px;height:18px;margin-top:3px;accent-color:var(--blue)}.item label{cursor:pointer}.item small{display:block;color:var(--muted);margin-top:3px}
+.progress{height:10px;background:#e8edf5;border-radius:99px;overflow:hidden}.progress span{display:block;height:100%;background:var(--blue);width:0%;transition:width .2s}
+.two{display:grid;grid-template-columns:1.2fr .8fr;gap:15px}.risk-note{background:#fff8e6;border:1px solid #f5d58c;border-radius:10px;padding:13px;color:#704b00}
+footer{text-align:center;color:var(--muted);padding:25px;font-size:13px}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.two{grid-template-columns:1fr}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+@media(max-width:480px){.grid{grid-template-columns:1fr}th,td{padding:9px;font-size:13px}header{padding:24px 17px}}
+</style>
+</head>
+<body>
+<header>
+<div class="wrap">
+<h1>Web Application Security Hardening</h1>
+<p>A practical threat-modeling dashboard to track assets, abuse cases, risk priority, and remediation progress.</p>
+<nav aria-label="Main navigation">
+<button class="active" data-tab="overview">Overview</button>
+<button data-tab="assets">Assets & Boundaries</button>
+<button data-tab="threats">Threat Register</button>
+<button data-tab="plan">Hardening Plan</button>
+<button data-tab="tests">Validation</button>
+</nav>
+</div>
+</header>
+<main>
+<section id="overview" class="panel active">
+<div class="grid">
+<div class="card"><div class="muted">Tracked assets</div><div class="stat">9</div><div class="muted">Credentials, data, infrastructure</div></div>
+<div class="card"><div class="muted">Abuse cases</div><div class="stat" id="threatCount">10</div><div class="muted">Potential threats to validate</div></div>
+<div class="card"><div class="muted">Critical initial risks</div><div class="stat">2</div><div class="muted">Illustrative scoring</div></div>
+<div class="card"><div class="muted">Validation progress</div><div class="stat" id="progressCount">0/11</div><div class="muted">Checks completed locally</div></div>
+</div>
+<div class="section-head"><h2>Recommended first actions</h2></div>
+<div class="two">
+<div class="box">
+<h3>Start with these controls</h3>
+<div class="item"><input type="checkbox" class="action-check" id="a1"><label for="a1"><b>Protect login and administrator accounts</b><small>Secure password hashing, throttling, MFA for administrators.</small></label></div>
+<div class="item"><input type="checkbox" class="action-check" id="a2"><label for="a2"><b>Enforce server-side authorization</b><small>Check permissions on every protected object and operation.</small></label></div>
+<div class="item"><input type="checkbox" class="action-check" id="a3"><label for="a3"><b>Secure database access</b><small>Parameterized queries and least-privilege database credentials.</small></label></div>
+<div class="item"><input type="checkbox" class="action-check" id="a4"><label for="a4"><b>Remove exposed secrets</b><small>Rotate any leaked credentials and use a secrets manager.</small></label></div>
+</div>
+<div class="box">
+<h3>Implementation progress</h3>
+<p class="muted">Progress is saved in this browser on this device. This demo does not send data to a server.</p>
+<div class="progress"><span id="actionProgress"></span></div>
+<p id="actionProgressText" class="muted">0 of 4 first actions completed</p>
+<div class="risk-note"><b>Important:</b> The scores and threats are starter estimates, not confirmed vulnerabilities. Review the real code and deployment before treating any issue as present.</div>
+</div>
+</div>
+<div class="section-head"><h2>Application data flow</h2></div>
+<div class="flow">
+<div><b>Users</b><br><span class="muted">Browser / mobile app</span></div><div><span class="arrow">→</span><br><b>Web layer</b><br><span class="muted">HTTPS, request limits</span></div><div><span class="arrow">→</span><br><b>Backend</b><br><span class="muted">AuthN / AuthZ</span></div><div><span class="arrow">→</span><br><b>Database</b><br><span class="muted">Private data</span></div><div><span class="arrow">↔</span><br><b>External services</b><br><span class="muted">Email / APIs</span></div>
+</div>
+</section>
+<section id="assets" class="panel">
+<h2>Assets & trust boundaries</h2>
+<p class="muted">Protect the assets according to their confidentiality, integrity, and availability requirements.</p>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Asset</th><th>Why it matters</th><th>Priority</th></tr></thead><tbody>
+<tr><td>A1</td><td>Passwords and credentials</td><td>Compromise can lead to account takeover.</td><td><span class="badge critical">Critical</span></td></tr>
+<tr><td>A2</td><td>Personal user information</td><td>Exposure can harm user privacy and trust.</td><td><span class="badge critical">Critical</span></td></tr>
+<tr><td>A3</td><td>Session cookies and tokens</td><td>Can grant access as an authenticated user.</td><td><span class="badge critical">Critical</span></td></tr>
+<tr><td>A4</td><td>Database</td><td>Contains data that may be read, changed, or deleted.</td><td><span class="badge critical">Critical</span></td></tr>
+<tr><td>A5</td><td>Administrator account</td><td>May control users, settings, and deployment.</td><td><span class="badge critical">Critical</span></td></tr>
+<tr><td>A6</td><td>API endpoints</td><td>Expose application operations and data.</td><td><span class="badge high">High</span></td></tr>
+<tr><td>A7</td><td>Source code and configuration</td><td>May expose weaknesses or secrets.</td><td><span class="badge high">High</span></td></tr>
+<tr><td>A8</td><td>Application availability</td><td>Outages prevent legitimate use.</td><td><span class="badge high">Med–High</span></td></tr>
+<tr><td>A9</td><td>External services and dependencies</td><td>Compromise can enter through integrations.</td><td><span class="badge high">Med–High</span></td></tr>
+</tbody></table></div>
+<div class="section-head"><h2>Trust boundaries</h2></div>
+<div class="box">
+<ol>
+<li><b>User → web server:</b> treat requests, cookies, and uploaded content as untrusted.</li>
+<li><b>Web server → backend:</b> validate input and enforce authorization on the server.</li>
+<li><b>Backend → database:</b> use parameterized queries and narrowly scoped database permissions.</li>
+<li><b>Backend → external service:</b> protect API keys and validate responses and webhook signatures.</li>
+</ol>
+</div>
+</section>
+<section id="threats" class="panel">
+<h2>Threat register</h2>
+<p class="muted">Scores are likelihood × impact, each rated from 1 to 5. Change the ratings after testing and reviewing your actual architecture.</p>
+<div class="filters"><input id="threatSearch" type="text" placeholder="Search threat or asset…"><select id="riskFilter"><option value="all">All risk levels</option><option value="Critical">Critical</option><option value="High">High</option><option value="Medium">Medium</option></select></div>
+<div class="table-wrap"><table><thead><tr><th>ID / threat</th><th>Target</th><th>Likelihood</th><th>Impact</th><th>Score</th><th>Risk</th><th>Mitigation</th></tr></thead><tbody id="threatRows"></tbody></table></div>
+</section>
+<section id="plan" class="panel">
+<h2>Prioritized hardening plan</h2>
+<p class="muted">Use the checkboxes to track work. Your selections are stored in this browser.</p>
+<div id="planList"></div>
+</section>
+<section id="tests" class="panel">
+<h2>Security validation checklist</h2>
+<p class="muted">Check a row only after verifying the behavior in a local or authorized test environment.</p>
+<div class="box"><div class="progress"><span id="testProgress"></span></div><p id="testProgressText" class="muted">0 of 11 checks complete</p><div id="testList"></div><button class="secondary" id="resetChecks">Reset validation checklist</button></div>
+</section>
+</main>
+<footer>Security planning prototype • Data stays in this browser • Not a vulnerability scanner or production security guarantee</footer>
+<script>
+const threats=[
+{id:'T1',name:'Password attacks / credential stuffing',asset:'A1, A5',l:4,i:5,mit:'Rate limiting, breached-password checks where appropriate, MFA for administrators, secure password hashing.'},
+{id:'T2',name:'SQL injection',asset:'A2, A4',l:3,i:5,mit:'Parameterized queries, safe ORM use, least-privilege database account.'},
+{id:'T3',name:'Session theft or misuse',asset:'A3',l:3,i:5,mit:'Secure cookie attributes, HTTPS, session rotation and revocation.'},
+{id:'T4',name:'Unauthorized access to another user’s records',asset:'A2, A6',l:4,i:4,mit:'Server-side object-level authorization checks on every request.'},
+{id:'T5',name:'Cross-site scripting (XSS)',asset:'A2, A3',l:3,i:4,mit:'Context-aware output encoding, safe rendering, suitable Content Security Policy.'},
+{id:'T6',name:'Exposed API keys or secrets',asset:'A7, A9',l:3,i:5,mit:'Remove and rotate exposed secrets; use a secrets manager and narrow permissions.'},
+{id:'T7',name:'Password-reset abuse',asset:'A1, A5',l:3,i:5,mit:'Unpredictable, single-use, expiring reset tokens; rate limits and generic responses.'},
+{id:'T8',name:'Denial of service / resource exhaustion',asset:'A8',l:3,i:4,mit:'Rate limits, request-size limits, timeouts, quotas and monitoring.'},
+{id:'T9',name:'Vulnerable third-party dependency',asset:'A7, A9',l:3,i:4,mit:'Dependency scanning, prompt patching and review of changes.'},
+{id:'T10',name:'Administrator account compromise',asset:'A5',l:3,i:5,mit:'MFA, least privilege, separate admin accounts and alerting.'}
+];
+const plans=[
+{title:'P1 · Authentication and access control',level:'Critical',items:['Use Argon2id or another suitable password-hashing algorithm with reviewed parameters.','Rate-limit login and password-reset attempts.','Require MFA for administrator accounts.','Enforce server-side authorization on every protected operation.','Rotate sessions after login and privilege changes.']},
+{title:'P2 · Database and input security',level:'Critical',items:['Use parameterized SQL queries or a safely configured ORM.','Validate inputs on the server with explicit schemas.','Apply least-privilege database permissions.','Keep the database off public networks where possible.','Return generic errors without stack traces or SQL details.']},
+{title:'P3 · Sessions and browser security',level:'High',items:['Set session cookies with HttpOnly, Secure, and suitable SameSite attributes.','Enforce HTTPS and configure HSTS after verifying HTTPS readiness.','Use context-aware output encoding and an appropriate Content Security Policy.','Add CSRF protections for cookie-authenticated state-changing requests where required.','Expire and revoke sessions appropriately.']},
+{title:'P4 · Secrets and dependencies',level:'High',items:['Keep API keys and database credentials out of source code.','Rotate exposed credentials and use a secrets manager.','Scan dependencies for known vulnerabilities.','Patch vulnerable libraries and frameworks.','Restrict external API permissions to the minimum required.']},
+{title:'P5 · Rate limiting and availability',level:'High',items:['Rate-limit login, registration, password reset, and expensive endpoints.','Set request-size and execution-time limits.','Validate file uploads and cap sizes if uploads exist.','Configure connection limits, timeouts, backups, and recovery procedures.','Monitor spikes and repeated failures.']},
+{title:'P6 · Logging and monitoring',level:'Medium–High',items:['Log authentication failures, authorization failures, and administrative actions.','Never log passwords, session tokens, or API secrets.','Alert on repeated failures and suspicious administrator activity.','Restrict log access and define incident-response steps.','Test backup restoration periodically.']}
+];
+const tests=['Passwords use a suitable password-hashing algorithm.','Repeated login attempts are rate-limited.','Users cannot access other users’ private records.','Database access uses parameterized queries.','Session cookies have appropriate security attributes.','Sensitive traffic is protected by HTTPS.','Password-reset tokens are random, single-use, and expire.','Secrets are not exposed in source code or responses.','Dependency vulnerabilities are assessed and addressed.','Security logs do not expose secrets.','A backup restore has been tested.'];
+function load(key,def){try{return JSON.parse(localStorage.getItem(key))??def}catch{return def}}
+function save(key,val){localStorage.setItem(key,JSON.stringify(val))}
+function risk(t){let s=t.l*t.i;return s>=16?'Critical':s>=10?'High':s>=5?'Medium':'Low'}
+function badge(r){return `<span class="badge ${r.toLowerCase()}">${r}</span>`}
+function renderThreats(){
+ let q=document.getElementById('threatSearch').value.toLowerCase(),f=document.getElementById('riskFilter').value;
+ let rows=threats.filter(t=>(t.name+' '+t.asset+' '+t.mit).toLowerCase().includes(q)&&(f==='all'||risk(t)===f));
+ document.getElementById('threatRows').innerHTML=rows.map(t=>`<tr><td><b>${t.id}</b><br>${t.name}</td><td>${t.asset}</td><td>${t.l}/5</td><td>${t.i}/5</td><td><b>${t.l*t.i}</b></td><td>${badge(risk(t))}</td><td>${t.mit}</td></tr>`).join('')||'<tr><td colspan="7">No matching threats.</td></tr>';
+}
+function renderPlan(){
+ const state=load('hardening-plan',{});let n=0,total=0;
+ document.getElementById('planList').innerHTML=plans.map((p,pi)=>`<div class="box" style="margin-bottom:14px"><div class="section-head" style="margin-top:0"><h3>${p.title}</h3>${badge(p.level)}</div>${p.items.map((it,ii)=>{let id=`p-${pi}-${ii}`,checked=!!state[id];if(checked)n++;total++;return `<div class="item"><input type="checkbox" id="${id}" data-plan="${id}" ${checked?'checked':''}><label for="${id}">${it}</label></div>`}).join('')}</div>`).join('');
+ document.querySelectorAll('[data-plan]').forEach(el=>el.addEventListener('change',()=>{let s=load('hardening-plan',{});s[el.dataset.plan]=el.checked;save('hardening-plan',s);renderPlan()}));
+}
+function renderTests(){
+ let state=load('security-tests',[]);
+ document.getElementById('testList').innerHTML=tests.map((t,i)=>`<div class="item"><input type="checkbox" id="test-${i}" data-test="${i}" ${state.includes(i)?'checked':''}><label for="test-${i}">${t}</label></div>`).join('');
+ document.querySelectorAll('[data-test]').forEach(el=>el.addEventListener('change',()=>{let s=load('security-tests',[]),i=Number(el.dataset.test);s=el.checked?[...new Set([...s,i])]:s.filter(x=>x!==i);save('security-tests',s);updateProgress()}));updateProgress();
+}
+function updateProgress(){
+ let s=load('security-tests',[]),n=s.length;document.getElementById('progressCount').textContent=`${n}/11`;document.getElementById('testProgress').style.width=`${n/11*100}%`;document.getElementById('testProgressText').textContent=`${n} of 11 checks complete`;
+ let a=[...document.querySelectorAll('.action-check')].filter(x=>x.checked).length;document.getElementById('actionProgress').style.width=`${a/4*100}%`;document.getElementById('actionProgressText').textContent=`${a} of 4 first actions completed`;
+}
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===b.dataset.tab))}));
+document.getElementById('threatSearch').addEventListener('input',renderThreats);document.getElementById('riskFilter').addEventListener('change',renderThreats);
+document.querySelectorAll('.action-check').forEach(el=>{el.checked=load('first-actions',[]).includes(el.id);el.addEventListener('change',()=>{let s=[...document.querySelectorAll('.action-check')].filter(x=>x.checked).map(x=>x.id);save('first-actions',s);updateProgress()})});
+document.getElementById('resetChecks').addEventListener('click',()=>{if(confirm('Reset all validation checklist items?')){save('security-tests',[]);renderTests()}});
+renderThreats();renderPlan();renderTests();updateProgress();
+</script>
+</body>
+</html>
